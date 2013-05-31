@@ -76,6 +76,7 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
 
 void serial_init()
 {
+
   /* Disable watchdog if enabled by bootloader/fuses */
   MCUSR &= ~(1 << WDRF);
   wdt_disable();

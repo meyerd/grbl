@@ -23,6 +23,7 @@
 #define settings_h
 
 #include <math.h>
+#include <inttypes.h>
 #include "nuts_bolts.h"
 
 #define GRBL_VERSION "0.8c"

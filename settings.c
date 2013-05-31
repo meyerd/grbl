@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "eeprom.h"
 #include "limits.h"
+#include "defaults.h"
 
 settings_t settings;
 
