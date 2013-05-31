@@ -27,7 +27,9 @@
 #include "print.h"
 #include "settings.h"
 #include "config.h"
+#include <math.h>
 #include "nuts_bolts.h"
+#include <avr/pgmspace.h>
 #include "stepper.h"
 #include "report.h"
 #include "motion_control.h"
@@ -46,13 +48,13 @@ static void protocol_reset_line_buffer()
 
 void protocol_init() 
 {
-  protocol_reset_line_buffer();
-  report_init_message(); // Welcome message   
-  
-  PINOUT_DDR &= ~(PINOUT_MASK); // Set as input pins
-  PINOUT_PORT |= PINOUT_MASK; // Enable internal pull-up resistors. Normal high operation.
-  PINOUT_PCMSK |= PINOUT_MASK;   // Enable specific pins of the Pin Change Interrupt
-  PCICR |= (1 << PINOUT_INT);   // Enable Pin Change Interrupt
+  // Print grbl initialization message
+  printPgmString(PSTR("\r\nGrbl " GRBL_VERSION));
+  printPgmString(PSTR("\r\n"));
+  printPgmString(PSTR("\r\n'$' to dump current settings\r\n"));
+
+  char_counter = 0; // Reset line input
+  iscomment = false;
 }
 
 // Executes user startup script, if stored.
@@ -290,10 +292,8 @@ uint8_t protocol_execute_line(char *line)
 
 // Process and report status one line of incoming serial data. Performs an initial filtering
 // by removing spaces and comments and capitalizing all letters.
-void protocol_process()
+void protocol_process(uint8_t c)
 {
-  uint8_t c;
-  while((c = serial_read()) != SERIAL_NO_DATA) {
     if ((c == '\n') || (c == '\r')) { // End of line reached
 
       // Runtime command check point before executing line. Prevent any furthur line executions.
@@ -337,5 +337,4 @@ void protocol_process()
         }
       }
     }
-  }
 }

@@ -101,7 +101,7 @@ int main(void)
     }
     
     protocol_execute_runtime();
-    protocol_process(); // ... process the serial protocol
+    serial_tick(); // ... process the serial protocol
     
   }
   return 0;   /* never reached */

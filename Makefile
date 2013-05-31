@@ -1,100 +1,62 @@
-#  Part of Grbl
 #
-#  Copyright (c) 2009-2011 Simen Svale Skogsrud
-#  Copyright (c) 2012 Sungeun K. Jeon
+#             LUFA Library
+#     Copyright (C) Dean Camera, 2012.
 #
-#  Grbl is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+#  dean [at] fourwalledcubicle [dot] com
+#           www.lufa-lib.crg
 #
-#  Grbl is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+# --------------------------------------
+#         LUFA Project Makefile.
+# --------------------------------------
+
+# Run "make help" for target help.
+
+MCU          = atmega32u4
+ARCH         = AVR8
+BOARD        = LEONARDO
+F_CPU        = 16000000
+F_USB        = $(F_CPU)
+OPTIMIZATION = s
+TARGET       = grbl
+SRC          = main.c motion_control.c gcode.c spindle_control.c serial.c coolant_control.c \
+			 protocol.c stepper.c serial.c protocol.c report.c\
+             eeprom.c settings.c planner.c nuts_bolts.c limits.c print.c config/Descriptors.c \
+			 $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+LUFA_PATH    = deps/LUFA
+#CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Iconfig/ -lm -Wl,--gc-sections -ffunction-sections
+CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Iconfig/ -lm -Wl,--gc-sections -ffunction-sections
+LD_FLAGS     =
+
+USB_PORT = /dev/ttyACM0
+PROGRAMMER = -c avr109 -P $(USB_PORT)
+#PROGRAMMER = -c stk500 -P /dev/ttyACM0
+AVRDUDE = avrdude -p $(MCU) $(PROGRAMMER) -b57600 -D
+
+RESET_CMD_START = python -c "from serial import Serial;from time import sleep;s=Serial ('
+RESET_CMD_END = ', 115200);s.close();s.open();s.close();s.setBaudrate(1200);s.open();s.close()"
+RESET_CMD = $(RESET_CMD_START)$(USB_PORT)$(RESET_CMD_END)
+
+#If you already have .hex, seems to work better given reset required...
+#can implement a software reset by connecting on 1200 baud, TODO
 
 
-# This is a prototype Makefile. Modify it according to your needs.
-# You should at least check the settings for
-# DEVICE ....... The AVR device you compile for
-# CLOCK ........ Target AVR clock rate in Hertz
-# OBJECTS ...... The object files created from your source files. This list is
-#                usually the same as the list of source files with suffix ".o".
-# PROGRAMMER ... Options to avrdude which define the hardware you use for
-#                uploading to the AVR and the interface where this hardware
-#                is connected.
-# FUSES ........ Parameters for avrdude to flash the fuses appropriately.
+# Default target
+all:
 
-DEVICE     ?= atmega328p
-CLOCK      = 16000000
-PROGRAMMER ?= -c avrisp2 -P usb
-OBJECTS    = main.o motion_control.o gcode.o spindle_control.o coolant_control.o serial.o \
-             protocol.o stepper.o eeprom.o settings.o planner.o nuts_bolts.o limits.o \
-             print.o report.o
-# FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0x24:m
-FUSES      = -U hfuse:w:0xd2:m -U lfuse:w:0xff:m
-# update that line with this when programmer is back up:
-# FUSES      = -U hfuse:w:0xd7:m -U lfuse:w:0xff:m
+# Include LUFA build script makefiles
+include $(LUFA_PATH)/Build/lufa_core.mk
+include $(LUFA_PATH)/Build/lufa_sources.mk
+include $(LUFA_PATH)/Build/lufa_build.mk
+include $(LUFA_PATH)/Build/lufa_cppcheck.mk
+include $(LUFA_PATH)/Build/lufa_doxygen.mk
+include $(LUFA_PATH)/Build/lufa_dfu.mk
+include $(LUFA_PATH)/Build/lufa_hid.mk
+include $(LUFA_PATH)/Build/lufa_avrdude.mk
+include $(LUFA_PATH)/Build/lufa_atprogram.mk
 
-# Tune the lines below only if you know what you are doing:
+upload:		all	
+		$(RESET_CMD)
+		$(AVRDUDE) -U flash:w:grbl.hex:i 
 
-AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE) -B 10 -F
-COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -I. -ffunction-sections
 
-# symbolic targets:
-all:	grbl.hex
-
-.c.o:
-	$(COMPILE) -c $< -o $@
-	@$(COMPILE) -MM  $< > $*.d
-
-.S.o:
-	$(COMPILE) -x assembler-with-cpp -c $< -o $@
-# "-x assembler-with-cpp" should not be necessary since this is the default
-# file type for the .S (with capital S) extension. However, upper case
-# characters are not always preserved on Windows. To ensure WinAVR
-# compatibility define the file type manually.
-
-.c.s:
-	$(COMPILE) -S $< -o $@
-
-flash:	all
-	$(AVRDUDE) -U flash:w:grbl.hex:i
-
-fuse:
-	$(AVRDUDE) $(FUSES)
-
-# Xcode uses the Makefile targets "", "clean" and "install"
-install: flash fuse
-
-# if you use a bootloader, change the command below appropriately:
-load: all
-	bootloadHID grbl.hex
-
-clean:
-	rm -f grbl.hex main.elf $(OBJECTS) $(OBJECTS:.o=.d)
-
-# file targets:
-main.elf: $(OBJECTS)
-	$(COMPILE) -o main.elf $(OBJECTS) -lm -Wl,--gc-sections
-
-grbl.hex: main.elf
-	rm -f grbl.hex
-	avr-objcopy -j .text -j .data -O ihex main.elf grbl.hex
-	avr-size -C --mcu=$(DEVICE) main.elf
-# If you have an EEPROM section, you must also create a hex file for the
-# EEPROM and add it to the "flash" target.
-
-# Targets for code debugging and analysis:
-disasm:	main.elf
-	avr-objdump -d main.elf
-
-cpp:
-	$(COMPILE) -E main.c
-
-# include generated header dependencies
--include $(OBJECTS:.o=.d)
 

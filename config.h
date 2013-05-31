@@ -30,44 +30,56 @@
 // Serial baud rate
 #define BAUD_RATE 9600
 
+
+/* step pins (required)
+#define stepPin0 10 //x step D10 - pin 30 - PB6
+#define stepPin1 8 //y step D8 - pin 28 - PB4
+#define stepPin2 -1 // z step
+
+// dir pins (required)
+#define dirPin0 11 //x dir D11 - pin 12 - PB7
+#define dirPin1 9 //y dir D9 - pin 29 - PB5
+#define dirPin2 -1 // z dir
+*/
+
 // Define pin-assignments
 // NOTE: All step bit and direction pins must be on the same port.
-#define STEPPING_DDR       DDRD
-#define STEPPING_PORT      PORTD
-#define X_STEP_BIT         2  // Uno Digital Pin 2
-#define Y_STEP_BIT         3  // Uno Digital Pin 3
-#define Z_STEP_BIT         4  // Uno Digital Pin 4
-#define X_DIRECTION_BIT    5  // Uno Digital Pin 5
-#define Y_DIRECTION_BIT    6  // Uno Digital Pin 6
+#define STEPPING_DDR       DDRB
+#define STEPPING_PORT      PORTB
+#define X_STEP_BIT         6  // Uno Digital Pin 2
+#define Y_STEP_BIT         4  // Uno Digital Pin 3
+#define Z_STEP_BIT         6  // Uno Digital Pin 4
+#define X_DIRECTION_BIT    7  // Uno Digital Pin 5
+#define Y_DIRECTION_BIT    5  // Uno Digital Pin 6
 #define Z_DIRECTION_BIT    7  // Uno Digital Pin 7
 #define STEP_MASK ((1<<X_STEP_BIT)|(1<<Y_STEP_BIT)|(1<<Z_STEP_BIT)) // All step bits
 #define DIRECTION_MASK ((1<<X_DIRECTION_BIT)|(1<<Y_DIRECTION_BIT)|(1<<Z_DIRECTION_BIT)) // All direction bits
 #define STEPPING_MASK (STEP_MASK | DIRECTION_MASK) // All stepping-related bits (step/direction)
 
-#define STEPPERS_DISABLE_DDR    DDRB
-#define STEPPERS_DISABLE_PORT   PORTB
+#define STEPPERS_DISABLE_DDR    DDRD
+#define STEPPERS_DISABLE_PORT   PORTD
 #define STEPPERS_DISABLE_BIT    0  // Uno Digital Pin 8
 #define STEPPERS_DISABLE_MASK (1<<STEPPERS_DISABLE_BIT)
 
 // NOTE: All limit bit pins must be on the same port
-#define LIMIT_DDR       DDRB
-#define LIMIT_PIN       PINB
-#define LIMIT_PORT      PORTB
-#define X_LIMIT_BIT     1  // Uno Digital Pin 9
-#define Y_LIMIT_BIT     2  // Uno Digital Pin 10
-#define Z_LIMIT_BIT     3  // Uno Digital Pin 11
+#define LIMIT_DDR     DDRD
+#define LIMIT_PIN     PIND
+#define LIMIT_PORT      PORTD
+#define X_LIMIT_BIT   -1  // Uno Digital Pin 9
+#define Y_LIMIT_BIT   -1  // Uno Digital Pin 10
+#define Z_LIMIT_BIT   -1  // Uno Digital Pin 11
 #define LIMIT_INT       PCIE0  // Pin change interrupt enable pin
 #define LIMIT_INT_vect  PCINT0_vect 
 #define LIMIT_PCMSK     PCMSK0 // Pin change interrupt register
 #define LIMIT_MASK ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
 
-#define SPINDLE_ENABLE_DDR   DDRB
-#define SPINDLE_ENABLE_PORT  PORTB
-#define SPINDLE_ENABLE_BIT   4  // Uno Digital Pin 12
+#define SPINDLE_ENABLE_DDR DDRD
+#define SPINDLE_ENABLE_PORT PORTD
+#define SPINDLE_ENABLE_BIT -1  // Uno Digital Pin 12
 
-#define SPINDLE_DIRECTION_DDR   DDRB
-#define SPINDLE_DIRECTION_PORT  PORTB
-#define SPINDLE_DIRECTION_BIT   5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
+#define SPINDLE_DIRECTION_DDR DDRD
+#define SPINDLE_DIRECTION_PORT PORTD
+#define SPINDLE_DIRECTION_BIT -1  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
 
 #define COOLANT_FLOOD_DDR   DDRC
 #define COOLANT_FLOOD_PORT  PORTC
@@ -208,7 +220,7 @@
 // As well as, older FTDI FT232RL-based Arduinos(Duemilanove) are known to work with standard
 // terminal programs since their firmware correctly manage these XON/XOFF characters. In any
 // case, please report any successes to grbl administrators!
-// #define ENABLE_XONXOFF // Default disabled. Uncomment to enable.
+#define ENABLE_XONXOFF // Default disabled. Uncomment to enable.
 
 // Creates a delay between the direction pin setting and corresponding step pulse by creating
 // another interrupt (Timer2 compare) to manage it. The main Grbl interrupt (Timer1 compare) 

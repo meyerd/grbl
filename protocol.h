@@ -38,7 +38,7 @@ void protocol_init();
 
 // Read command lines from the serial port and execute them as they
 // come in. Blocks until the serial buffer is emptied. 
-void protocol_process();
+void protocol_process(uint8_t c);
 
 // Executes one line of input according to protocol
 uint8_t protocol_execute_line(char *line);
