@@ -1,3 +1,22 @@
+This is grbl 0.8c for an Arduino Leodardo or similar.
+------------
+It is very close to the maximum sketch size and some features were dropped:
+Coolant
+Spindle Control
+Homing
+
+You could probably put one or more back in if you removed the bootloader and utilized a dedicated programmer.
+
+Includes ATMega32u4 Support via LUFA. 
+In addition to that, contributions were made by tmpvar - https://github.com/tmpvar/grbl/commits/atmega32u4-support
+
+Grbl Version 8c.
+
+##TODO
+Figure out how to fit more features.
+
+MD from upstream:
+------------
 #Grbl - An embedded g-code interpreter and motion-controller for the Arduino/AVR328 microcontroller
 ------------
 
