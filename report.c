@@ -32,7 +32,7 @@
 #include "settings.h"
 #include "nuts_bolts.h"
 #include "gcode.h"
-#include "coolant_control.h"
+//#include "coolant_control.h"
 
 
 // Handles the primary confirmation protocol response for streaming interfaces and human-feedback.
@@ -255,11 +255,13 @@ void report_gcode_modes()
   }
   
   switch (gc.coolant_mode) {
-    case COOLANT_DISABLE : printPgmString(PSTR(" M9")); break;
+    /*No coolant for you!
+     *case COOLANT_DISABLE : printPgmString(PSTR(" M9")); break;
     case COOLANT_FLOOD_ENABLE : printPgmString(PSTR(" M8")); break;
     #ifdef ENABLE_M7
       case COOLANT_MIST_ENABLE : printPgmString(PSTR(" M7")); break;
     #endif
+    */
   }
   
   printPgmString(PSTR(" T"));

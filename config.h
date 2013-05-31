@@ -27,8 +27,8 @@
 // Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
 #define DEFAULTS_GENERIC
 
-// Serial baud rate
-#define BAUD_RATE 115200
+// Serial baud rate - not needed with LUFA!
+//#define BAUD_RATE 115200
 
 
 /* step pins (required)
@@ -69,10 +69,11 @@
 #define Y_LIMIT_BIT   -1  // Uno Digital Pin 10
 #define Z_LIMIT_BIT   -1  // Uno Digital Pin 11
 #define LIMIT_INT       PCIE0  // Pin change interrupt enable pin
-#define LIMIT_INT_vect  PCINT0_vect 
+#define LIMIT_INT_vect  PCINT0_vect
 #define LIMIT_PCMSK     PCMSK0 // Pin change interrupt register
 #define LIMIT_MASK ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
 
+/*No room for spindle.
 #define SPINDLE_ENABLE_DDR DDRD
 #define SPINDLE_ENABLE_PORT PORTD
 #define SPINDLE_ENABLE_BIT -1  // Uno Digital Pin 12
@@ -80,10 +81,12 @@
 #define SPINDLE_DIRECTION_DDR DDRD
 #define SPINDLE_DIRECTION_PORT PORTD
 #define SPINDLE_DIRECTION_BIT -1  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
-
+*/
+/*No coolant for you!
 #define COOLANT_FLOOD_DDR   DDRC
 #define COOLANT_FLOOD_PORT  PORTC
 #define COOLANT_FLOOD_BIT   3  // Uno Analog Pin 3
+
 
 // NOTE: Uno analog pins 4 and 5 are reserved for an i2c interface, and may be installed at
 // a later date if flash and memory space allows.
@@ -93,6 +96,7 @@
   #define COOLANT_MIST_PORT  PORTC
   #define COOLANT_MIST_BIT   4 // Uno Analog Pin 4
 #endif  
+*/
 
 // NOTE: All pinouts pins must be on the same port
 #define PINOUT_DDR       DDRC
@@ -149,14 +153,14 @@
 // If homing is enabled, homing init lock sets Grbl into an alarm state upon power up. This forces
 // the user to perform the homing cycle (or override the locks) before doing anything else. This is
 // mainly a safety feature to remind the user to home, since position is unknown to Grbl.
-#define HOMING_INIT_LOCK // Comment to disable
+//#define HOMING_INIT_LOCK // Comment to disable
 
 // The homing cycle seek and feed rates will adjust so all axes independently move at the homing
 // seek and feed rates regardless of how many axes are in motion simultaneously. If disabled, rates
 // are point-to-point rates, as done in normal operation. For example in an XY diagonal motion, the
 // diagonal motion moves at the intended rate, but the individual axes move at 70% speed. This option
 // just moves them all at 100% speed.
-#define HOMING_RATE_ADJUST // Comment to disable
+//#define HOMING_RATE_ADJUST // Comment to disable
 
 // Define the homing cycle search patterns with bitmasks. The homing cycle first performs a search
 // to engage the limit switches. HOMING_SEARCH_CYCLE_x are executed in order starting with suffix 0 
@@ -167,15 +171,15 @@
 // in on machine zero, followed by a pull-off maneuver. HOMING_LOCATE_CYCLE governs these final moves,
 // and this mask must contain all axes in the search.
 // NOTE: Later versions may have this installed in settings.
-#define HOMING_SEARCH_CYCLE_0 (1<<Z_AXIS)                // First move Z to clear workspace.
-#define HOMING_SEARCH_CYCLE_1 ((1<<X_AXIS)|(1<<Y_AXIS))  // Then move X,Y at the same time.
+//#define HOMING_SEARCH_CYCLE_0 (1<<Z_AXIS)                // First move Z to clear workspace.
+//#define HOMING_SEARCH_CYCLE_1 ((1<<X_AXIS)|(1<<Y_AXIS))  // Then move X,Y at the same time.
 // #define HOMING_SEARCH_CYCLE_2                         // Uncomment and add axes mask to enable
-#define HOMING_LOCATE_CYCLE   ((1<<X_AXIS)|(1<<Y_AXIS)|(1<<Z_AXIS)) // Must contain ALL search axes
+//#define HOMING_LOCATE_CYCLE   ((1<<X_AXIS)|(1<<Y_AXIS)|(1<<Z_AXIS)) // Must contain ALL search axes
 
 // Number of homing cycles performed after when the machine initially jogs to limit switches.
 // This help in preventing overshoot and should improve repeatability. This value should be one or 
 // greater.
-#define N_HOMING_LOCATE_CYCLE 2 // Integer (1-128)
+//#define N_HOMING_LOCATE_CYCLE 2 // Integer (1-128)
 
 // Number of blocks Grbl executes upon startup. These blocks are stored in EEPROM, where the size
 // and addresses are defined in settings.h. With the current settings, up to 5 startup blocks may
@@ -220,7 +224,7 @@
 // As well as, older FTDI FT232RL-based Arduinos(Duemilanove) are known to work with standard
 // terminal programs since their firmware correctly manage these XON/XOFF characters. In any
 // case, please report any successes to grbl administrators!
-#define ENABLE_XONXOFF // Default disabled. Uncomment to enable.
+//#define ENABLE_XONXOFF // Default disabled. Uncomment to enable.
 
 // Creates a delay between the direction pin setting and corresponding step pulse by creating
 // another interrupt (Timer2 compare) to manage it. The main Grbl interrupt (Timer1 compare) 

@@ -25,6 +25,7 @@
 void limits_init();
 
 // perform the homing cycle
-void limits_go_home();
+//No room for homing.
+//void limits_go_home();
 
 #endif

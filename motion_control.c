@@ -28,8 +28,8 @@
 #include "config.h"
 #include "gcode.h"
 #include "motion_control.h"
-#include "spindle_control.h"
-#include "coolant_control.h"
+//#include "spindle_control.h"
+//#include "coolant_control.h"
 #include "nuts_bolts.h"
 #include "stepper.h"
 #include "planner.h"
@@ -216,8 +216,8 @@ void mc_go_home()
 {
   sys.state = STATE_HOMING; // Set system state variable
   LIMIT_PCMSK &= ~LIMIT_MASK; // Disable hard limits pin change register for cycle duration
-  
-  limits_go_home(); // Perform homing routine.
+  //No room for homing
+  //limits_go_home(); // Perform homing routine.
 
   protocol_execute_runtime(); // Check for reset and set system abort.
   if (sys.abort) { return; } // Did not complete. Alarm state set by mc_alarm.
@@ -233,6 +233,9 @@ void mc_go_home()
   // from falsely tripping when hard limits are enabled.
   int8_t x_dir, y_dir, z_dir;
   x_dir = y_dir = z_dir = 0;
+
+  //No room for homing.
+  /*
   if (HOMING_LOCATE_CYCLE & (1<<X_AXIS)) { 
     if (settings.homing_dir_mask & (1<<X_DIRECTION_BIT)) { x_dir = 1; }
     else { x_dir = -1; }
@@ -245,6 +248,8 @@ void mc_go_home()
     if (settings.homing_dir_mask & (1<<Z_DIRECTION_BIT)) { z_dir = 1; }
     else { z_dir = -1; }
   }
+  */
+
   mc_line(x_dir*settings.homing_pulloff, y_dir*settings.homing_pulloff, 
           z_dir*settings.homing_pulloff, settings.homing_seek_rate, false);
   st_cycle_start(); // Move it. Nothing should be in the buffer except this motion. 
@@ -271,8 +276,10 @@ void mc_reset()
     sys.execute |= EXEC_RESET;
 
     // Kill spindle and coolant.   
-    spindle_stop();
-    coolant_stop();
+    //No room for spindle.
+    //spindle_stop();
+    //No coolant for you!
+    //coolant_stop();
 
     // Kill steppers only if in any motion state, i.e. cycle, feed hold, homing, or jogging
     // NOTE: If steppers are kept enabled via the step idle delay setting, this also keeps

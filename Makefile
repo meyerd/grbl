@@ -18,9 +18,9 @@ F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = grbl
-SRC          = main.c motion_control.c gcode.c spindle_control.c serial.c coolant_control.c \
-			 protocol.c stepper.c serial.c protocol.c report.c\
-             eeprom.c settings.c planner.c nuts_bolts.c limits.c print.c config/Descriptors.c \
+SRC          = main.c motion_control.c gcode.c serial.c \
+                         protocol.c stepper.c serial.c protocol.c report.c \
+                         eeprom.c settings.c planner.c nuts_bolts.c limits.c print.c config/Descriptors.c \
 			 $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = deps/LUFA
 #CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Iconfig/ -lm -Wl,--gc-sections -ffunction-sections

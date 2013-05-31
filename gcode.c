@@ -28,8 +28,8 @@
 #include <math.h>
 #include "settings.h"
 #include "motion_control.h"
-#include "spindle_control.h"
-#include "coolant_control.h"
+//#include "spindle_control.h"
+//#include "coolant_control.h"
 #include "errno.h"
 #include "protocol.h"
 #include "report.h"
@@ -179,11 +179,13 @@ uint8_t gc_execute_line(char *line)
           case 3: gc.spindle_direction = 1; break;
           case 4: gc.spindle_direction = -1; break;
           case 5: gc.spindle_direction = 0; break;
+          /* No coolant for you!
           #ifdef ENABLE_M7
             case 7: gc.coolant_mode = COOLANT_MIST_ENABLE; break;
           #endif
           case 8: gc.coolant_mode = COOLANT_FLOOD_ENABLE; break;
           case 9: gc.coolant_mode = COOLANT_DISABLE; break;
+          */
           default: FAIL(STATUS_UNSUPPORTED_STATEMENT);
         }            
         break;
@@ -255,10 +257,11 @@ uint8_t gc_execute_line(char *line)
     //  ([M6]: Tool change should be executed here.)
 
     // [M3,M4,M5]: Update spindle state
-    spindle_run(gc.spindle_direction);
+    //No room for spindle.
+    //spindle_run(gc.spindle_direction);
   
     // [*M7,M8,M9]: Update coolant state
-    coolant_run(gc.coolant_mode);
+    //coolant_run(gc.coolant_mode);
   }
   
   // [G54,G55,...,G59]: Coordinate system selection

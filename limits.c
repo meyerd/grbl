@@ -78,8 +78,9 @@ ISR(LIMIT_INT_vect)
   }
 }
 
+/*No room for homing.
 
-// Moves all specified axes in same specified direction (positive=true, negative=false)
+//Moves all specified axes in same specified direction (positive=true, negative=false)
 // and at the homing rate. Homing is a special motion case, where there is only an 
 // acceleration followed by abrupt asynchronous stops by each axes reaching their limit 
 // switch independently. Instead of shoehorning homing cycles into the main stepper 
@@ -244,3 +245,4 @@ void limits_go_home()
 
   st_go_idle(); // Call main stepper shutdown routine.  
 }
+*/
