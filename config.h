@@ -32,39 +32,39 @@
 
 
 /* step pins (required)
-#define stepPin0 10 //x step D10 - pin 30 - PB6
-#define stepPin1 8 //y step D8 - pin 28 - PB4
-#define stepPin2 -1 // z step
-
+//Leostick will use Port D for stepping as it has the available pinout.
+X Step - Digital 0/RX (RXD1/INT2) PD2
+Y Step - Digital 2/SDA (SDA/INT1) PD1
+Z Step - Digital 4 (ICP1/ADC8) PD4
 // dir pins (required)
-#define dirPin0 11 //x dir D11 - pin 12 - PB7
-#define dirPin1 9 //y dir D9 - pin 29 - PB5
-#define dirPin2 -1 // z dir
+X Dir - Digital 1/TX (TSC1/INT3) PD3
+Y Dir - Digital 3/SCL (OC0B/SCL/INT0) PD0
+Z Dir - Ditital 6 (T0/OC4D/ADC10) PD7
 */
 
 // Define pin-assignments
 // NOTE: All step bit and direction pins must be on the same port.
-#define STEPPING_DDR       DDRB
-#define STEPPING_PORT      PORTB
-#define X_STEP_BIT         6  // Uno Digital Pin 2
-#define Y_STEP_BIT         4  // Uno Digital Pin 3
-#define Z_STEP_BIT         6  // Uno Digital Pin 4
-#define X_DIRECTION_BIT    7  // Uno Digital Pin 5
-#define Y_DIRECTION_BIT    5  // Uno Digital Pin 6
-#define Z_DIRECTION_BIT    7  // Uno Digital Pin 7
+#define STEPPING_DDR       DDRD
+#define STEPPING_PORT      PORTD
+#define X_STEP_BIT         2
+#define Y_STEP_BIT         1
+#define Z_STEP_BIT         4
+#define X_DIRECTION_BIT    3
+#define Y_DIRECTION_BIT    0
+#define Z_DIRECTION_BIT    7
 #define STEP_MASK ((1<<X_STEP_BIT)|(1<<Y_STEP_BIT)|(1<<Z_STEP_BIT)) // All step bits
 #define DIRECTION_MASK ((1<<X_DIRECTION_BIT)|(1<<Y_DIRECTION_BIT)|(1<<Z_DIRECTION_BIT)) // All direction bits
 #define STEPPING_MASK (STEP_MASK | DIRECTION_MASK) // All stepping-related bits (step/direction)
 
-#define STEPPERS_DISABLE_DDR    DDRD
-#define STEPPERS_DISABLE_PORT   PORTD
-#define STEPPERS_DISABLE_BIT    0  // Uno Digital Pin 8
+#define STEPPERS_DISABLE_DDR    DDRB
+#define STEPPERS_DISABLE_PORT   PORTB
+#define STEPPERS_DISABLE_BIT    1  // Uno Digital Pin 8
 #define STEPPERS_DISABLE_MASK (1<<STEPPERS_DISABLE_BIT)
 
 // NOTE: All limit bit pins must be on the same port
-#define LIMIT_DDR     DDRD
-#define LIMIT_PIN     PIND
-#define LIMIT_PORT      PORTD
+#define LIMIT_DDR     DDRB
+#define LIMIT_PIN     PINB
+#define LIMIT_PORT      PORTB
 #define X_LIMIT_BIT   -1  // Uno Digital Pin 9
 #define Y_LIMIT_BIT   -1  // Uno Digital Pin 10
 #define Z_LIMIT_BIT   -1  // Uno Digital Pin 11
