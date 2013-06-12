@@ -296,47 +296,55 @@ uint8_t protocol_execute_line(char *line)
 // by removing spaces and comments and capitalizing all letters.
 void protocol_process(uint8_t c)
 {
-    if ((c == '\n') || (c == '\r')) { // End of line reached
+    //Need to incorporate the runtime command characters.
+	switch(c){
+    		case CMD_STATUS_REPORT: sys.execute |= EXEC_STATUS_REPORT; break; // Set as true
+    		case CMD_CYCLE_START:   sys.execute |= EXEC_CYCLE_START; break; // Set as true
+    		case CMD_FEED_HOLD:     sys.execute |= EXEC_FEED_HOLD; break; // Set as true
+    		case CMD_RESET:         mc_reset(); break; // Call motion control reset routine.
+		default:
+    			if ((c == '\n') || (c == '\r')) { // End of line reached
 
-      // Runtime command check point before executing line. Prevent any furthur line executions.
-      // NOTE: If there is no line, this function should quickly return to the main program when
-      // the buffer empties of non-executable data.
-      protocol_execute_runtime();
-      if (sys.abort) { return; } // Bail to main program upon system abort    
+			      // Runtime command check point before executing line. Prevent any furthur line executions.
+			      // NOTE: If there is no line, this function should quickly return to the main program when
+			      // the buffer empties of non-executable data.
+			      protocol_execute_runtime();
+			      if (sys.abort) { return; } // Bail to main program upon system abort    
 
-      if (char_counter > 0) {// Line is complete. Then execute!
-        line[char_counter] = 0; // Terminate string
-        report_status_message(protocol_execute_line(line));
-      } else { 
-        // Empty or comment line. Skip block.
-        report_status_message(STATUS_OK); // Send status message for syncing purposes.
-      }
-      protocol_reset_line_buffer();      
+			      if (char_counter > 0) {// Line is complete. Then execute!
+			        line[char_counter] = 0; // Terminate string
+			        report_status_message(protocol_execute_line(line));
+			      } else { 
+			        // Empty or comment line. Skip block.
+			        report_status_message(STATUS_OK); // Send status message for syncing purposes.
+			      }
+			      protocol_reset_line_buffer();      
     
-    } else {
-      if (iscomment) {
-        // Throw away all comment characters
-        if (c == ')') {
-          // End of comment. Resume line.
-          iscomment = false;
-        }
-      } else {
-        if (c <= ' ') { 
-          // Throw away whitepace and control characters
-        } else if (c == '/') { 
-          // Block delete not supported. Ignore character.
-        } else if (c == '(') {
-          // Enable comments flag and ignore all characters until ')' or EOL.
-          iscomment = true;
-        } else if (char_counter >= LINE_BUFFER_SIZE-1) {
-          // Report line buffer overflow and reset
-          report_status_message(STATUS_OVERFLOW);
-          protocol_reset_line_buffer();
-        } else if (c >= 'a' && c <= 'z') { // Upcase lowercase
-          line[char_counter++] = c-'a'+'A';
-        } else {
-          line[char_counter++] = c;
-        }
-      }
-    }
+			    } else {
+      				if (iscomment) {
+			        // Throw away all comment characters
+			        if (c == ')') {
+			          // End of comment. Resume line.
+			          iscomment = false;
+			        }
+			      } else {
+			        if (c <= ' ') { 
+			          // Throw away whitepace and control characters
+			        } else if (c == '/') { 
+			          // Block delete not supported. Ignore character.
+			        } else if (c == '(') {
+			          // Enable comments flag and ignore all characters until ')' or EOL.
+			          iscomment = true;
+			        } else if (char_counter >= LINE_BUFFER_SIZE-1) {
+			          // Report line buffer overflow and reset
+			          report_status_message(STATUS_OVERFLOW);
+			          protocol_reset_line_buffer();
+			        } else if (c >= 'a' && c <= 'z') { // Upcase lowercase
+			          line[char_counter++] = c-'a'+'A';
+			        } else {
+			          line[char_counter++] = c;
+			        }
+			      }
+			    }
+		}
 }
