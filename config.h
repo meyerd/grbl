@@ -98,17 +98,20 @@ Z Dir - Ditital 6 (T0/OC4D/ADC10) PD7
 #endif  
 */
 
+
+/*Not using PINOUTs for the time being.
 // NOTE: All pinouts pins must be on the same port
-#define PINOUT_DDR       DDRC
-#define PINOUT_PIN       PINC
-#define PINOUT_PORT      PORTC
+#define PINOUT_DDR       DDRB
+#define PINOUT_PIN       PINB
+#define PINOUT_PORT      PORTB
 #define PIN_RESET        0  // Uno Analog Pin 0
 #define PIN_FEED_HOLD    1  // Uno Analog Pin 1
 #define PIN_CYCLE_START  2  // Uno Analog Pin 2
-#define PINOUT_INT       PCIE1  // Pin change interrupt enable pin
-#define PINOUT_INT_vect  PCINT1_vect
-#define PINOUT_PCMSK     PCMSK1 // Pin change interrupt register
+#define PINOUT_INT       PCIE2  // Pin change interrupt enable pin
+#define PINOUT_INT_vect  PCINT2_vect
+#define PINOUT_PCMSK     PCMSK2 // Pin change interrupt register
 #define PINOUT_MASK ((1<<PIN_RESET)|(1<<PIN_FEED_HOLD)|(1<<PIN_CYCLE_START))
+*///Pinouts Disabled.
 
 // Define runtime command special characters. These characters are 'picked-off' directly from the
 // serial read data stream and are not passed to the grbl line execution parser. Select characters
