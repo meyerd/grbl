@@ -34,7 +34,7 @@
 #endif
 
 // Initialize the serial protocol
-void protocol_init();
+void protocol_init(void);
 
 // Read command lines from the serial port and execute them as they
 // come in. Blocks until the serial buffer is emptied. 
@@ -44,9 +44,9 @@ void protocol_process(uint8_t c);
 uint8_t protocol_execute_line(char *line);
 
 // Checks and executes a runtime command at various stop points in main program
-void protocol_execute_runtime();
+void protocol_execute_runtime(void);
 
 // Execute the startup script lines stored in EEPROM upon initialization
-void protocol_execute_startup();
+void protocol_execute_startup(void);
 
 #endif

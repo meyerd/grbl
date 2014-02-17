@@ -25,24 +25,24 @@
 #include <avr/io.h>
 
 // Initialize and setup the stepper motor subsystem
-void st_init();
+void st_init(void);
 
 // Enable steppers, but cycle does not start unless called by motion control or runtime command.
-void st_wake_up();
+void st_wake_up(void);
 
 // Immediately disables steppers
-void st_go_idle();
+void st_go_idle(void);
 
 // Reset the stepper subsystem variables       
-void st_reset();
+void st_reset(void);
              
 // Notify the stepper subsystem to start executing the g-code program in buffer.
-void st_cycle_start();
+void st_cycle_start(void);
 
 // Reinitializes the buffer after a feed hold for a resume.
-void st_cycle_reinitialize(); 
+void st_cycle_reinitialize(void); 
 
 // Initiates a feed hold of the running program
-void st_feed_hold();
+void st_feed_hold(void);
 
 #endif

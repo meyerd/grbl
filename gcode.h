@@ -88,7 +88,7 @@ typedef struct {
 extern parser_state_t gc;
 
 // Initialize the parser
-void gc_init();
+void gc_init(void);
 
 // Execute one block of rs275/ngc/g-code
 uint8_t gc_execute_line(char *line);

@@ -21,7 +21,7 @@ TARGET       = grbl
 SRC          = main.c motion_control.c gcode.c serial.c \
                          protocol.c stepper.c serial.c protocol.c report.c \
                          eeprom.c settings.c planner.c nuts_bolts.c limits.c print.c config/Descriptors.c \
-			 $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+			 $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS) $(LUFA_SRC_PLATFORM)
 LUFA_PATH    = deps/LUFA
 #CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Iconfig/ -lm -Wl,--gc-sections -ffunction-sections
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Iconfig/ -lm -Wl,--gc-sections -ffunction-sections

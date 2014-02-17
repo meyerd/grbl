@@ -129,7 +129,7 @@ void st_go_idle()
 // This function determines an acceleration velocity change every CYCLES_PER_ACCELERATION_TICK by
 // keeping track of the number of elapsed cycles during a de/ac-celeration. The code assumes that 
 // step_events occur significantly more often than the acceleration velocity iterations.
-inline static uint8_t iterate_trapezoid_cycle_counter() 
+inline static uint8_t iterate_trapezoid_cycle_counter(void) 
 {
   st.trapezoid_tick_cycle_counter += st.cycles_per_step_event;  
   if(st.trapezoid_tick_cycle_counter > CYCLES_PER_ACCELERATION_TICK) {

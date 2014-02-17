@@ -58,22 +58,22 @@ void report_alarm_message(int8_t alarm_code);
 void report_feedback_message(uint8_t message_code);
 
 // Prints welcome message
-void report_init_message();
+void report_init_message(void);
 
 // Prints Grbl help and current global settings
-void report_grbl_help();
+void report_grbl_help(void);
 
 // Prints Grbl global settings
-void report_grbl_settings();
+void report_grbl_settings(void);
 
 // Prints realtime status report
-void report_realtime_status();
+void report_realtime_status(void);
 
 // Prints Grbl persistent coordinate parameters
-void report_gcode_parameters();
+void report_gcode_parameters(void);
 
 // Prints current g-code parser mode state
-void report_gcode_modes();
+void report_gcode_modes(void);
 
 // Prints startup line
 void report_startup_line(uint8_t n, char *line);

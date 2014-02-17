@@ -40,14 +40,14 @@ void EVENT_CDC_Device_ControLineStateChanged();
 
 #define SERIAL_NO_DATA 0xff
 
-void serial_init();
+void serial_init(void);
 
 void serial_write(uint8_t data);
 
-uint8_t serial_read();
-void serial_tick();
+uint8_t serial_read(void);
+void serial_tick(void);
 
 // Reset and empty data in read buffer. Used by e-stop and reset.
-void serial_reset_read_buffer();
+void serial_reset_read_buffer(void);
 
 #endif

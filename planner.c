@@ -131,7 +131,7 @@ static void planner_reverse_pass_kernel(block_t *previous, block_t *current, blo
 
 // planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This 
 // implements the reverse pass.
-static void planner_reverse_pass() 
+static void planner_reverse_pass(void) 
 {
   uint8_t block_index = block_buffer_head;
   block_t *block[3] = {NULL, NULL, NULL};
@@ -172,7 +172,7 @@ static void planner_forward_pass_kernel(block_t *previous, block_t *current, blo
 
 // planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This 
 // implements the forward pass.
-static void planner_forward_pass() 
+static void planner_forward_pass(void) 
 {
   uint8_t block_index = block_buffer_tail;
   block_t *block[3] = {NULL, NULL, NULL};
@@ -241,7 +241,7 @@ static void calculate_trapezoid_for_block(block_t *block, float entry_factor, fl
 // planner_recalculate() after updating the blocks. Any recalulate flagged junction will
 // compute the two adjacent trapezoids to the junction, since the junction speed corresponds 
 // to exit speed and entry speed of one another.
-static void planner_recalculate_trapezoids() 
+static void planner_recalculate_trapezoids(void) 
 {
   uint8_t block_index = block_buffer_tail;
   block_t *current;
@@ -288,7 +288,7 @@ static void planner_recalculate_trapezoids()
 // All planner computations are performed with doubles (float on Arduinos) to minimize numerical round-
 // off errors. Only when planned values are converted to stepper rate parameters, these are integers.
 
-static void planner_recalculate() 
+static void planner_recalculate(void) 
 {     
   planner_reverse_pass();
   planner_forward_pass();

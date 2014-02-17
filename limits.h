@@ -22,7 +22,7 @@
 #define limits_h 
 
 // initialize the limits module
-void limits_init();
+void limits_init(void);
 
 // perform the homing cycle
 //No room for homing.

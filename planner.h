@@ -55,7 +55,7 @@ typedef struct {
 } block_t;
       
 // Initialize the motion plan subsystem      
-void plan_init();
+void plan_init(void);
 
 // Add a new linear movement to the buffer. x, y and z is the signed, absolute target position in 
 // millimaters. Feed rate specifies the speed of the motion. If feed rate is inverted, the feed
@@ -64,10 +64,10 @@ void plan_buffer_line(float x, float y, float z, float feed_rate, uint8_t invert
 
 // Called when the current block is no longer needed. Discards the block and makes the memory
 // availible for new blocks.
-void plan_discard_current_block();
+void plan_discard_current_block(void);
 
 // Gets the current block. Returns NULL if buffer empty
-block_t *plan_get_current_block();
+block_t *plan_get_current_block(void);
 
 // Reset the planner position vector (in steps)
 void plan_set_current_position(int32_t x, int32_t y, int32_t z);
@@ -76,12 +76,12 @@ void plan_set_current_position(int32_t x, int32_t y, int32_t z);
 void plan_cycle_reinitialize(int32_t step_events_remaining);
 
 // Reset buffer
-void plan_reset_buffer();
+void plan_reset_buffer(void);
 
 // Returns the status of the block ring buffer. True, if buffer is full.
-uint8_t plan_check_full_buffer();
+uint8_t plan_check_full_buffer(void);
 
 // Block until all buffered steps are executed
-void plan_synchronize();
+void plan_synchronize(void);
 
 #endif

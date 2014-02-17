@@ -26,6 +26,7 @@
 #include <avr/sleep.h>
 #include "serial.h"
 #include "config.h"
+#include "print.h"
 #include "stepper.h"
 #include "spindle_control.h"
 #include "nuts_bolts.h"
@@ -94,7 +95,8 @@ void serial_tick() {
 
   if (connected && !was_connected) {
     // Print grbl initialization message
-    printPgmString(PSTR("\r\nGrbl"), GRBL_VERSION);
+    printPgmString(PSTR("\r\nGrbl"));
+    printPgmString(GRBL_VERSION);
     printPgmString(PSTR("\r\n"));
     printPgmString(PSTR("\r\n'$' to dump current settings\r\n"));
     was_connected = true;

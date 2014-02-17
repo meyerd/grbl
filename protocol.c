@@ -39,7 +39,7 @@ static uint8_t char_counter; // Last character counter in line variable.
 static uint8_t iscomment; // Comment/block delete flag for processor to ignore comment characters.
 
 
-static void protocol_reset_line_buffer()
+static void protocol_reset_line_buffer(void)
 {
   char_counter = 0; // Reset line input
   iscomment = false;
