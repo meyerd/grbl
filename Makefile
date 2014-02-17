@@ -23,8 +23,21 @@ SRC          = main.c motion_control.c gcode.c serial.c \
                          eeprom.c settings.c planner.c nuts_bolts.c limits.c print.c config/Descriptors.c \
 			 $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS) $(LUFA_SRC_PLATFORM)
 LUFA_PATH    = deps/LUFA
+
+# Flash size and bootloader section sizes of the target, in KB. These must
+# match the target's total FLASH size and the bootloader size set in the
+# device's fuses.
+FLASH_SIZE_KB         = 32
+BOOT_SECTION_SIZE_KB  = 4
+
+# Bootloader address calculation formulas
+# Do not modify these macros, but rather modify the dependent values above.
+CALC_ADDRESS_IN_HEX   = $(shell printf "0x%X" $$(( $(1) )) )
+BOOT_START_OFFSET     = $(call CALC_ADDRESS_IN_HEX, ($(FLASH_SIZE_KB) - $(BOOT_SECTION_SIZE_KB)) * 1024 )
+BOOT_SEC_OFFSET       = $(call CALC_ADDRESS_IN_HEX, ($(FLASH_SIZE_KB) * 1024) - ($(strip $(1))) )
+
 #CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Iconfig/ -lm -Wl,--gc-sections -ffunction-sections
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Iconfig/ -lm -Wl,--gc-sections -ffunction-sections
+CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -Iconfig/ -lm -Wl,--gc-sections -ffunction-sections -DBOOTLOADER_START_ADDRESS=$(BOOT_START_OFFSET)
 LD_FLAGS     =
 
 USB_PORT = /dev/ttyACM0

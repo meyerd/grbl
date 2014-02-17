@@ -43,6 +43,7 @@
 static FILE USBSerialStream;
 
 bool connected = false, was_connected = false;
+uint8_t needs_bootload = false;
 
 /** LUFA CDC Class driver interface configuration and state information. This structure is
  *  passed to all CDC Class driver functions, so that multiple instances of the same class
@@ -96,7 +97,7 @@ void serial_tick() {
   if (connected && !was_connected) {
     // Print grbl initialization message
     printPgmString(PSTR("\r\nGrbl"));
-    printPgmString(GRBL_VERSION);
+    printPgmString(PSTR(GRBL_VERSION));
     printPgmString(PSTR("\r\n"));
     printPgmString(PSTR("\r\n'$' to dump current settings\r\n"));
     was_connected = true;
@@ -138,6 +139,64 @@ void EVENT_USB_Device_ControlRequest(void)
   CDC_Device_ProcessControlRequest(&VirtualSerial_CDC_Interface);
 }
 
-void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo) {
-  connected = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR);
+void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo) { 
+	if (CDCInterfaceInfo->State.LineEncoding.BaudRateBPS == 1200){ 
+		needs_bootload = true; 
+	}
 }
+
+uint32_t Boot_Key ATTR_NO_INIT;
+
+//#define FLASH_SIZE_BYTES	  (32*1024)
+//#define BOOTLOADER_SEC_SIZE_BYTES (4*1024)
+
+#define MAGIC_BOOT_KEY            0xDC42ACCA
+//#define BOOTLOADER_START_ADDRESS  (FLASH_SIZE_BYTES - BOOTLOADER_SEC_SIZE_BYTES)
+
+void Bootloader_Jump_Check(void) ATTR_INIT_SECTION(3);
+void Bootloader_Jump_Check(void)
+{
+	// If the reset source was the bootloader and the key is correct, clear it and jump to the bootloader
+	if ((MCUSR & (1 << WDRF)) && (Boot_Key == MAGIC_BOOT_KEY))
+	{
+		Boot_Key = 0;
+		((void (*)(void))BOOTLOADER_START_ADDRESS)();
+	}
+}
+
+void Jump_To_Bootloader(void)
+{
+	// If USB is used, detach from the bus and reset it
+	USB_Disable();
+
+	// Disable all interrupts
+	cli();
+
+	// Wait two seconds for the USB detachment to register on the host
+	Delay_MS(2000);
+
+	// Set the bootloader key to the magic value and force a reset
+	Boot_Key = MAGIC_BOOT_KEY;
+	wdt_enable(WDTO_250MS);
+	for (;;);
+}
+
+void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo) {
+	static bool PreviousDTRState = false; 
+	bool        CurrentDTRState  = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR); 
+
+	/* Check how the DTR line has been asserted */ 
+	if (PreviousDTRState && !(CurrentDTRState) ){ 
+		// Host application has Disconnected from the COM port 
+		if (needs_bootload){ 
+			Jump_To_Bootloader(); 
+			//Jump_To_Reset(true); 
+		} 
+	} 
+	PreviousDTRState = CurrentDTRState; 
+  
+//	connected = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR);
+	connected = CurrentDTRState;
+}
+
+

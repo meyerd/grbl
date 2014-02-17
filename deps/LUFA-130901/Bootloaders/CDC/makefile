@@ -11,10 +11,10 @@
 
 # Run "make help" for target help.
 
-MCU          = at90usb1287
+MCU          = atmega32u4
 ARCH         = AVR8
-BOARD        = USBKEY
-F_CPU        = 8000000
+BOARD        = LEONARDO
+F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = BootloaderCDC
@@ -23,11 +23,24 @@ LUFA_PATH    = ../../LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -DBOOT_START_ADDR=$(BOOT_START_OFFSET)
 LD_FLAGS     = -Wl,--section-start=.text=$(BOOT_START_OFFSET) $(BOOT_API_LD_FLAGS)
 
+AVRDUDE_PROGRAMMER = avr109
+ATPROGRAM_PORT = /dev/ttyACM0
+ATPROGRAM_FLAGS = -b57600 -D
+
+USB_PORT = /dev/ttyACM0
+PROGRAMMER = -c avr109 -P $(USB_PORT)
+#PROGRAMMER = -c stk500 -P /dev/ttyACM0
+AVRDUDE = avrdude -p $(MCU) $(PROGRAMMER) -b57600 -D
+
+RESET_CMD_START = python -c "from serial import Serial;from time import sleep;s=Serial ('
+RESET_CMD_END = ', 115200);s.close();s.open();s.close();s.setBaudrate(1200);s.open();s.close()"
+RESET_CMD = $(RESET_CMD_START)$(USB_PORT)$(RESET_CMD_END)
+
 # Flash size and bootloader section sizes of the target, in KB. These must
 # match the target's total FLASH size and the bootloader size set in the
 # device's fuses.
-FLASH_SIZE_KB         = 128
-BOOT_SECTION_SIZE_KB  = 8
+FLASH_SIZE_KB         = 32
+BOOT_SECTION_SIZE_KB  = 4
 
 # Bootloader address calculation formulas
 # Do not modify these macros, but rather modify the dependent values above.
@@ -53,3 +66,10 @@ include $(LUFA_PATH)/Build/lufa_cppcheck.mk
 include $(LUFA_PATH)/Build/lufa_doxygen.mk
 include $(LUFA_PATH)/Build/lufa_avrdude.mk
 include $(LUFA_PATH)/Build/lufa_atprogram.mk
+
+
+# upload to replace existing cdc bootloader
+upload:         all
+	$(RESET_CMD)
+	$(AVRDUDE) -U flash:w:BootloaderCDC.hex:i 
+
