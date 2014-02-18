@@ -18,7 +18,7 @@ F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = grbl
-SRC          = main.c motion_control.c gcode.c serial.c \
+SRC          = main.c motion_control.c gcode.c serial.c spindle_control.c \
                          protocol.c stepper.c serial.c protocol.c report.c \
                          eeprom.c settings.c planner.c nuts_bolts.c limits.c print.c config/Descriptors.c \
 			 $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS) $(LUFA_SRC_PLATFORM)

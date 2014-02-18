@@ -52,6 +52,16 @@ typedef struct {
 static stepper_t st;
 static block_t *current_block;  // A pointer to the block currently being traced
 
+// elcheapo variables
+static int8_t elcheapo_motor_x_direction=1;
+static int8_t elcheapo_motor_y_direction=1;
+static int8_t elcheapo_motor_x_state=0;
+static int8_t elcheapo_motor_y_state=0;
+static uint8_t elcheapo_motor_x_savedstate=0;
+static uint8_t elcheapo_motor_y_savedstate=0;
+static uint8_t elcheapo_stepping_enabled=false;
+static uint8_t elcheapo_step_array[8] = {8, 12, 4, 6, 2, 3, 1, 9};
+
 // Used by the stepper driver interrupt
 static uint8_t step_pulse_time; // Step pulse reset time after step rise
 static uint8_t out_bits;        // The next stepping-bits to be output
@@ -80,16 +90,96 @@ static volatile uint8_t busy;   // True when SIG_OUTPUT_COMPARE1A is being servi
 
 static void set_step_events_per_minute(uint32_t steps_per_minute);
 
+void elcheapo_steppers_enable()
+{
+  // restore saved stepper configuration
+  ELCHEAPO_MOTOR_X_PORT = (~ELCHEAPO_MOTOR_X_COIL_MASK & ELCHEAPO_MOTOR_X_PORT) | elcheapo_motor_x_savedstate;
+  ELCHEAPO_MOTOR_Y_PORT = (~ELCHEAPO_MOTOR_Y_COIL_MASK & ELCHEAPO_MOTOR_Y_PORT) | elcheapo_motor_y_savedstate;
+  // enable stepping
+  elcheapo_stepping_enabled = true;
+}
+
+void elcheapo_steppers_disable()
+{
+  // save old stepper configuration
+  elcheapo_motor_x_savedstate = ELCHEAPO_MOTOR_X_PORT & ELCHEAPO_MOTOR_X_COIL_MASK;
+  elcheapo_motor_y_savedstate = ELCHEAPO_MOTOR_Y_PORT & ELCHEAPO_MOTOR_Y_COIL_MASK;
+  // all outputs low
+  ELCHEAPO_MOTOR_X_PORT = ~ELCHEAPO_MOTOR_X_COIL_MASK & ELCHEAPO_MOTOR_X_PORT;
+  ELCHEAPO_MOTOR_Y_PORT = ~ELCHEAPO_MOTOR_Y_COIL_MASK & ELCHEAPO_MOTOR_Y_PORT;
+  // disable stepping
+  elcheapo_stepping_enabled = false;
+}
+
+void elcheapo_init_stepper_ports()
+{
+  ELCHEAPO_MOTOR_X_DDR |= ELCHEAPO_MOTOR_X_COIL_MASK;
+  ELCHEAPO_MOTOR_Y_DDR |= ELCHEAPO_MOTOR_Y_COIL_MASK;
+}
+
+void elcheapo_step()
+{
+  if ((out_bits & (1<<X_DIRECTION_BIT))==0)
+    elcheapo_motor_x_direction = -1;
+  else 
+    elcheapo_motor_x_direction = +1;
+  if ((out_bits & (1<<Y_DIRECTION_BIT))==0)
+    elcheapo_motor_y_direction = -1;
+  else 
+    elcheapo_motor_y_direction = +1;
+
+  if (elcheapo_stepping_enabled == true)
+  {
+    if (out_bits & (1<<X_STEP_BIT))
+    {
+      elcheapo_motor_x_state = (elcheapo_motor_x_state + elcheapo_motor_x_direction);
+    
+      if (elcheapo_motor_x_state > 7)
+        elcheapo_motor_x_state = 0;
+      else if (elcheapo_motor_x_state < 0)
+        elcheapo_motor_x_state = 7;
+    }
+  
+    if (out_bits & (1<<Y_STEP_BIT))
+    {
+      elcheapo_motor_y_state = (elcheapo_motor_y_state + elcheapo_motor_y_direction);
+  
+      if (elcheapo_motor_y_state > 7)
+        elcheapo_motor_y_state = 0;
+      else if (elcheapo_motor_y_state < 0)
+        elcheapo_motor_y_state = 7;
+    }
+  
+    //ELCHEAPO_MOTOR_X_PORT = (~ELCHEAPO_MOTOR_X_COIL_MASK & ELCHEAPO_MOTOR_X_PORT) | (1<<(ELCHEAPO_MOTOR_X_COILA_FORWARD+elcheapo_motor_x_state));
+    ELCHEAPO_MOTOR_X_PORT = (~ELCHEAPO_MOTOR_X_COIL_MASK & ELCHEAPO_MOTOR_X_PORT) | (elcheapo_step_array[elcheapo_motor_x_state]<<ELCHEAPO_MOTOR_X_COILA_FORWARD);
+    //ELCHEAPO_MOTOR_Y_PORT = (~ELCHEAPO_MOTOR_Y_COIL_MASK & ELCHEAPO_MOTOR_Y_PORT) | (1<<(ELCHEAPO_MOTOR_Y_COILA_FORWARD+elcheapo_motor_y_state));
+    ELCHEAPO_MOTOR_Y_PORT = (~ELCHEAPO_MOTOR_Y_COIL_MASK & ELCHEAPO_MOTOR_Y_PORT) | (elcheapo_step_array[elcheapo_motor_y_state]<<ELCHEAPO_MOTOR_Y_COILA_FORWARD);
+  }
+}
+
+void elcheapo_update_direction()
+{
+  if ((out_bits & (1<<X_DIRECTION_BIT))==0)
+    elcheapo_motor_x_direction = -1;
+  else 
+    elcheapo_motor_x_direction = +1;
+  if ((out_bits & (1<<Y_DIRECTION_BIT))==0)
+    elcheapo_motor_y_direction = -1;
+  else 
+    elcheapo_motor_y_direction = +1;
+}
+
 // Stepper state initialization. Cycle should only start if the st.cycle_start flag is
 // enabled. Startup init and limits call this function but shouldn't start the cycle.
 void st_wake_up() 
 {
   // Enable steppers by resetting the stepper disable port
-  if (bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) { 
+  /*if (bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) { 
     STEPPERS_DISABLE_PORT |= (1<<STEPPERS_DISABLE_BIT); 
   } else { 
     STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT);
-  }
+  }*/
+  elcheapo_steppers_enable();
   if (sys.state == STATE_CYCLE) {
     // Initialize stepper output bits
     out_bits = (0) ^ (settings.invert_mask); 
@@ -119,9 +209,11 @@ void st_go_idle()
     // stop and not drift from residual inertial forces at the end of the last movement.
     delay_ms(settings.stepper_idle_lock_time);
     if (bit_istrue(settings.flags,BITFLAG_INVERT_ST_ENABLE)) { 
-      STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT); 
+      elcheapo_steppers_enable();
+      //STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT); 
     } else { 
-      STEPPERS_DISABLE_PORT |= (1<<STEPPERS_DISABLE_BIT); 
+      elcheapo_steppers_disable();
+      //STEPPERS_DISABLE_PORT |= (1<<STEPPERS_DISABLE_BIT); 
     }   
   }
 }
@@ -149,12 +241,15 @@ ISR(TIMER1_COMPA_vect)
   if (busy) { return; } // The busy-flag is used to avoid reentering this interrupt
   
   // Set the direction pins a couple of nanoseconds before we step the steppers
-  STEPPING_PORT = (STEPPING_PORT & ~DIRECTION_MASK) | (out_bits & DIRECTION_MASK);
+  // STEPPING_PORT = (STEPPING_PORT & ~DIRECTION_MASK) | (out_bits & DIRECTION_MASK);
+  elcheapo_update_direction();
   // Then pulse the stepping pins
   #ifdef STEP_PULSE_DELAY
+    //FIXME!
     step_bits = (STEPPING_PORT & ~STEP_MASK) | out_bits; // Store out_bits to prevent overwriting.
   #else  // Normal operation
-    STEPPING_PORT = (STEPPING_PORT & ~STEP_MASK) | out_bits;
+    //STEPPING_PORT = (STEPPING_PORT & ~STEP_MASK) | out_bits;
+    elcheapo_step();
   #endif
   // Enable step pulse reset timer so that The Stepper Port Reset Interrupt can reset the signal after
   // exactly settings.pulse_microseconds microseconds, independent of the main Timer1 prescaler.
@@ -324,7 +419,7 @@ ISR(TIMER1_COMPA_vect)
 ISR(TIMER0_OVF_vect)
 {
   // Reset stepping pins (leave the direction pins)
-  STEPPING_PORT = (STEPPING_PORT & ~STEP_MASK) | (settings.invert_mask & STEP_MASK); 
+  // STEPPING_PORT = (STEPPING_PORT & ~STEP_MASK) | (settings.invert_mask & STEP_MASK); 
   TCCR0B = 0; // Disable Timer0 to prevent re-entering this interrupt when it's not needed. 
 }
 
@@ -336,7 +431,8 @@ ISR(TIMER0_OVF_vect)
   // st_wake_up() routine.
   ISR(TIMER0_COMPA_vect) 
   { 
-    STEPPING_PORT = step_bits; // Begin step pulse.
+    //STEPPING_PORT = step_bits; // Begin step pulse.
+    elcheapo_step(step_bits);
   }
 #endif
 
@@ -353,9 +449,13 @@ void st_reset()
 void st_init()
 {
   // Configure directions of interface pins
-  STEPPING_DDR |= STEPPING_MASK;
-  STEPPING_PORT = (STEPPING_PORT & ~STEPPING_MASK) | settings.invert_mask;
-  STEPPERS_DISABLE_DDR |= 1<<STEPPERS_DISABLE_BIT;
+
+  elcheapo_init_stepper_ports();
+  //STEPPING_DDR |= STEPPING_MASK;
+  //STEPPING_PORT = (STEPPING_PORT & ~STEPPING_MASK) | settings.invert_mask;
+
+  //STEPPERS_DISABLE_DDR |= 1<<STEPPERS_DISABLE_BIT;
+  elcheapo_steppers_disable();
 
   // waveform generation = 0100 = CTC
   TCCR1B &= ~(1<<WGM13);

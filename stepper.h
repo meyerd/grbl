@@ -45,4 +45,10 @@ void st_cycle_reinitialize(void);
 // Initiates a feed hold of the running program
 void st_feed_hold(void);
 
+void elcheapo_steppers_enable();
+void elcheapo_steppers_disable();
+
+void elcheapo_step();
+void elcheapo_update_direction();
+
 #endif

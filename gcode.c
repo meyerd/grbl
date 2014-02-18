@@ -28,7 +28,7 @@
 #include <math.h>
 #include "settings.h"
 #include "motion_control.h"
-//#include "spindle_control.h"
+#include "spindle_control.h"
 //#include "coolant_control.h"
 #include "errno.h"
 #include "protocol.h"
@@ -258,7 +258,7 @@ uint8_t gc_execute_line(char *line)
 
     // [M3,M4,M5]: Update spindle state
     //No room for spindle.
-    //spindle_run(gc.spindle_direction);
+    spindle_run(gc.spindle_direction);
   
     // [*M7,M8,M9]: Update coolant state
     //coolant_run(gc.coolant_mode);

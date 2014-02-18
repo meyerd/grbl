@@ -28,7 +28,7 @@
 #include "config.h"
 #include "gcode.h"
 #include "motion_control.h"
-//#include "spindle_control.h"
+#include "spindle_control.h"
 //#include "coolant_control.h"
 #include "nuts_bolts.h"
 #include "stepper.h"
@@ -277,7 +277,7 @@ void mc_reset()
 
     // Kill spindle and coolant.   
     //No room for spindle.
-    //spindle_stop();
+    spindle_stop();
     //No coolant for you!
     //coolant_stop();
 
