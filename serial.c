@@ -34,7 +34,6 @@
 #include "settings.h"
 
 #include "Descriptors.h"
-#include <LUFA/Drivers/USB/USB.h>
 
 
 /** Standard file stream for the CDC interface when set up, so that the virtual CDC COM port can be
@@ -139,19 +138,17 @@ void EVENT_USB_Device_ControlRequest(void)
   CDC_Device_ProcessControlRequest(&VirtualSerial_CDC_Interface);
 }
 
-void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo) { 
+void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo)
+{ 
 	if (CDCInterfaceInfo->State.LineEncoding.BaudRateBPS == 1200){ 
 		needs_bootload = true; 
 	}
 }
 
+// Taken from LUFA example
 uint32_t Boot_Key ATTR_NO_INIT;
 
-//#define FLASH_SIZE_BYTES	  (32*1024)
-//#define BOOTLOADER_SEC_SIZE_BYTES (4*1024)
-
 #define MAGIC_BOOT_KEY            0xDC42ACCA
-//#define BOOTLOADER_START_ADDRESS  (FLASH_SIZE_BYTES - BOOTLOADER_SEC_SIZE_BYTES)
 
 void Bootloader_Jump_Check(void) ATTR_INIT_SECTION(3);
 void Bootloader_Jump_Check(void)
@@ -181,7 +178,8 @@ void Jump_To_Bootloader(void)
 	for (;;);
 }
 
-void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo) {
+void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo)
+{
 	static bool PreviousDTRState = false; 
 	bool        CurrentDTRState  = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR); 
 
@@ -190,12 +188,10 @@ void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const C
 		// Host application has Disconnected from the COM port 
 		if (needs_bootload){ 
 			Jump_To_Bootloader(); 
-			//Jump_To_Reset(true); 
 		} 
 	} 
 	PreviousDTRState = CurrentDTRState; 
   
-//	connected = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR);
 	connected = CurrentDTRState;
 }
 
