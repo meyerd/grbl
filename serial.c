@@ -34,7 +34,6 @@
 #include "settings.h"
 
 #include "Descriptors.h"
-#include <LUFA/Drivers/USB/USB.h>
 
 
 /** Standard file stream for the CDC interface when set up, so that the virtual CDC COM port can be
