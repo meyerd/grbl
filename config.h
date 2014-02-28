@@ -160,7 +160,7 @@ Z Dir - Ditital 6 (T0/OC4D/ADC10) PD7
 // slower than this value, except when sleeping. This parameter overrides the minimum planner speed.
 // This is primarily used to guarantee that the end of a movement is always reached and not stop to
 // never reach its target. This parameter should always be greater than zero.
-#define MINIMUM_STEPS_PER_MINUTE 800 // (steps/min) - Integer value only
+#define MINIMUM_STEPS_PER_MINUTE 10 // (steps/min) - Integer value only
 
 // Time delay increments performed during a dwell. The default value is set at 50ms, which provides
 // a maximum time delay of roughly 55 minutes, more than enough for most any application. Increasing
