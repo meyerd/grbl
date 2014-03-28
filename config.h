@@ -98,6 +98,13 @@ Z Dir - Ditital 6 (T0/OC4D/ADC10) PD7
 #define SPINDLE_DIRECTION_PORT PORTB
 #define SPINDLE_DIRECTION_BIT 0  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
 
+
+// Cooling fan
+#define COOLING_FAN_DDR DDRB
+#define COOLING_FAN_PORT PORTB
+#define COOLING_FAN_BIT 6
+#define COOLING_FAN_RUNTIME 10 // number of seconds to run the fan after last command
+
 /*No coolant for you!
 #define COOLANT_FLOOD_DDR   DDRC
 #define COOLANT_FLOOD_PORT  PORTC

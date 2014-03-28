@@ -19,8 +19,10 @@ F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = grbl
 SRC          = main.c motion_control.c gcode.c serial.c spindle_control.c \
+	       		 cooling_fan.c \
                          protocol.c stepper.c serial.c protocol.c report.c \
-                         eeprom.c settings.c planner.c nuts_bolts.c limits.c print.c config/Descriptors.c \
+                         eeprom.c settings.c planner.c nuts_bolts.c limits.c \
+			 print.c config/Descriptors.c \
 			 $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS) $(LUFA_SRC_PLATFORM)
 LUFA_PATH    = deps/LUFA
 
@@ -47,7 +49,7 @@ AVRDUDE = avrdude -p $(MCU) $(PROGRAMMER) -b57600 -D
 
 RESET_CMD_START = python -c "from serial import Serial;from time import sleep;s=Serial ('
 RESET_CMD_END = ', 115200);s.close();s.open();s.close();s.setBaudrate(1200);s.open();s.close()"
-RESET_CMD = $(RESET_CMD_START)$(USB_PORT)$(RESET_CMD_END)
+RESET_CMD = $(RESET_CMD_START)$(USB_PORT)$(RESET_CMD_END) 
 
 #If you already have .hex, seems to work better given reset required...
 #can implement a software reset by connecting on 1200 baud, TODO
@@ -69,6 +71,7 @@ include $(LUFA_PATH)/Build/lufa_atprogram.mk
 
 upload:		all	
 		$(RESET_CMD)
+		sleep 2
 		$(AVRDUDE) -U flash:w:grbl.hex:i 
 
 

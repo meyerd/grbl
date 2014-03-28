@@ -30,6 +30,7 @@
 #include "nuts_bolts.h"
 #include "stepper.h"
 #include "spindle_control.h"
+#include "cooling_fan.h"
 //#include "coolant_control.h"
 #include "motion_control.h"
 #include "gcode.h"
@@ -66,6 +67,8 @@ int main(void)
       gc_init(); // Set g-code parser to default state
       protocol_init(); // Clear incoming line data and execute startup lines
       spindle_init();
+      cooling_fan_init();
+      cooling_fan_run();
       //coolant_init();
       limits_init();
       st_reset(); // Clear stepper subsystem variables.
