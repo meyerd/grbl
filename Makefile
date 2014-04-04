@@ -74,5 +74,9 @@ upload:		all
 		sleep 2
 		$(AVRDUDE) -U flash:w:grbl.hex:i 
 
+setup_broken_laser_io: 
+	$(eval CC_FLAGS += -DBROKEN_LASER_IO)
+
+juhaa:  setup_broken_laser_io all
 
 

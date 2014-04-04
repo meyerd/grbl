@@ -94,7 +94,7 @@ static void set_step_events_per_minute(uint32_t steps_per_minute);
 void elcheapo_steppers_enable()
 {
 
-  cooling_fan_run();
+  //cooling_fan_run();
   // restore saved stepper configuration
   ELCHEAPO_MOTOR_X_PORT = (~ELCHEAPO_MOTOR_X_COIL_MASK & ELCHEAPO_MOTOR_X_PORT) | elcheapo_motor_x_savedstate;
   ELCHEAPO_MOTOR_Y_PORT = (~ELCHEAPO_MOTOR_Y_COIL_MASK & ELCHEAPO_MOTOR_Y_PORT) | elcheapo_motor_y_savedstate;
@@ -113,7 +113,7 @@ void elcheapo_steppers_disable()
   // disable stepping
   elcheapo_stepping_enabled = false;
 
-  cooling_fan_stop();
+  //cooling_fan_stop();
 }
 
 void elcheapo_init_stepper_ports()

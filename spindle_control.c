@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "spindle_control.h"
 #include "planner.h"
+#include "cooling_fan.h"
 
 static uint8_t current_direction;
 

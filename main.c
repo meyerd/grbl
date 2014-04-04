@@ -68,7 +68,7 @@ int main(void)
       protocol_init(); // Clear incoming line data and execute startup lines
       spindle_init();
       cooling_fan_init();
-//      cooling_fan_run();
+      cooling_fan_run();
       //coolant_init();
       limits_init();
       st_reset(); // Clear stepper subsystem variables.
