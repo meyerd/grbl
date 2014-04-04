@@ -27,6 +27,7 @@
 #include "config.h"
 #include "settings.h"
 #include "planner.h"
+#include "cooling_fan.h"
 
 // Some useful constants
 #define TICKS_PER_MICROSECOND (F_CPU/1000000)
@@ -92,6 +93,8 @@ static void set_step_events_per_minute(uint32_t steps_per_minute);
 
 void elcheapo_steppers_enable()
 {
+
+  cooling_fan_run();
   // restore saved stepper configuration
   ELCHEAPO_MOTOR_X_PORT = (~ELCHEAPO_MOTOR_X_COIL_MASK & ELCHEAPO_MOTOR_X_PORT) | elcheapo_motor_x_savedstate;
   ELCHEAPO_MOTOR_Y_PORT = (~ELCHEAPO_MOTOR_Y_COIL_MASK & ELCHEAPO_MOTOR_Y_PORT) | elcheapo_motor_y_savedstate;
@@ -109,6 +112,8 @@ void elcheapo_steppers_disable()
   ELCHEAPO_MOTOR_Y_PORT = ~ELCHEAPO_MOTOR_Y_COIL_MASK & ELCHEAPO_MOTOR_Y_PORT;
   // disable stepping
   elcheapo_stepping_enabled = false;
+
+  cooling_fan_stop();
 }
 
 void elcheapo_init_stepper_ports()
