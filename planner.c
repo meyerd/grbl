@@ -55,43 +55,6 @@ static uint8_t next_block_index(uint8_t block_index)
   return(block_index);
 }
 
-
-// Returns the index of the previous block in the ring buffer
-static uint8_t prev_block_index(uint8_t block_index) 
-{
-  if (block_index == 0) { block_index = BLOCK_BUFFER_SIZE; }
-  block_index--;
-  return(block_index);
-}
-
-
-// Calculates the distance (not time) it takes to accelerate from initial_rate to target_rate using the 
-// given acceleration:
-static float estimate_acceleration_distance(float initial_rate, float target_rate, float acceleration) 
-{
-  return( (target_rate*target_rate-initial_rate*initial_rate)/(2*acceleration) );
-}
-
-
-/*                        + <- some maximum rate we don't care about
-                         /|\
-                        / | \                    
-                       /  |  + <- final_rate     
-                      /   |  |                   
-     initial_rate -> +----+--+                   
-                          ^  ^                   
-                          |  |                   
-      intersection_distance  distance                                                                           */
-// This function gives you the point at which you must start braking (at the rate of -acceleration) if 
-// you started at speed initial_rate and accelerated until this point and want to end at the final_rate after
-// a total travel of distance. This can be used to compute the intersection point between acceleration and
-// deceleration in the cases where the trapezoid has no plateau (i.e. never reaches maximum speed)
-static float intersection_distance(float initial_rate, float final_rate, float acceleration, float distance) 
-{
-  return( (2*acceleration*distance-initial_rate*initial_rate+final_rate*final_rate)/(4*acceleration) );
-}
-
-            
 // Calculates the maximum allowable speed at this point when you must be able to reach target_velocity
 // using the acceleration within the allotted distance.
 // NOTE: sqrt() reimplimented here from prior version due to improved planner logic. Increases speed
@@ -102,149 +65,14 @@ static float max_allowable_speed(float acceleration, float target_velocity, floa
   return( sqrt(target_velocity*target_velocity-2*acceleration*distance) );
 }
 
-
-// The kernel called by planner_recalculate() when scanning the plan from last to first entry.
-static void planner_reverse_pass_kernel(block_t *previous, block_t *current, block_t *next) 
+static void set_constant_speed_for_block(block_t *block)
 {
-  if (!current) { return; }  // Cannot operate on nothing.
-  
-  if (next) { 
-    // If entry speed is already at the maximum entry speed, no need to recheck. Block is cruising.
-    // If not, block in state of acceleration or deceleration. Reset entry speed to maximum and 
-    // check for maximum allowable speed reductions to ensure maximum possible planned speed.
-    if (current->entry_speed != current->max_entry_speed) {
-    
-      // If nominal length true, max junction speed is guaranteed to be reached. Only compute
-      // for max allowable speed if block is decelerating and nominal length is false.
-      if ((!current->nominal_length_flag) && (current->max_entry_speed > next->entry_speed)) {
-        current->entry_speed = min( current->max_entry_speed,
-          max_allowable_speed(-settings.acceleration,next->entry_speed,current->millimeters));
-      } else {
-        current->entry_speed = current->max_entry_speed;
-      } 
-      current->recalculate_flag = true;    
-    
-    }
-  } // Skip last block. Already initialized and set for recalculation.
-}
-
-
-// planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This 
-// implements the reverse pass.
-static void planner_reverse_pass(void) 
-{
-  uint8_t block_index = block_buffer_head;
-  block_t *block[3] = {NULL, NULL, NULL};
-  while(block_index != block_buffer_tail) {    
-    block_index = prev_block_index( block_index );
-    block[2]= block[1];
-    block[1]= block[0];
-    block[0] = &block_buffer[block_index];
-    planner_reverse_pass_kernel(block[0], block[1], block[2]);
-  }
-  // Skip buffer tail/first block to prevent over-writing the initial entry speed.
-}
-
-
-// The kernel called by planner_recalculate() when scanning the plan from first to last entry.
-static void planner_forward_pass_kernel(block_t *previous, block_t *current, block_t *next) 
-{
-  if(!previous) { return; }  // Begin planning after buffer_tail
-  
-  // If the previous block is an acceleration block, but it is not long enough to complete the
-  // full speed change within the block, we need to adjust the entry speed accordingly. Entry
-  // speeds have already been reset, maximized, and reverse planned by reverse planner.
-  // If nominal length is true, max junction speed is guaranteed to be reached. No need to recheck.  
-  if (!previous->nominal_length_flag) {
-    if (previous->entry_speed < current->entry_speed) {
-      float entry_speed = min( current->entry_speed,
-        max_allowable_speed(-settings.acceleration,previous->entry_speed,previous->millimeters) );
-
-      // Check for junction speed change
-      if (current->entry_speed != entry_speed) {
-        current->entry_speed = entry_speed;
-        current->recalculate_flag = true;
-      }
-    }    
-  }
-}
-
-
-// planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This 
-// implements the forward pass.
-static void planner_forward_pass(void) 
-{
-  uint8_t block_index = block_buffer_tail;
-  block_t *block[3] = {NULL, NULL, NULL};
-  
-  while(block_index != block_buffer_head) {
-    block[0] = block[1];
-    block[1] = block[2];
-    block[2] = &block_buffer[block_index];
-    planner_forward_pass_kernel(block[0],block[1],block[2]);
-    block_index = next_block_index( block_index );
-  }
-  planner_forward_pass_kernel(block[1], block[2], NULL);
-}
-
-
-/*                             STEPPER RATE DEFINITION                                              
-                                     +--------+   <- nominal_rate
-                                    /          \                                
-    nominal_rate*entry_factor ->   +            \                               
-                                   |             + <- nominal_rate*exit_factor  
-                                   +-------------+                              
-                                       time -->                                 
-*/                                                                              
-// Calculates trapezoid parameters so that the entry- and exit-speed is compensated by the provided factors.
-// The factors represent a factor of braking and must be in the range 0.0-1.0.
-// This converts the planner parameters to the data required by the stepper controller.
-// NOTE: Final rates must be computed in terms of their respective blocks.
-static void calculate_trapezoid_for_block(block_t *block, float entry_factor, float exit_factor) 
-{  
-  block->initial_rate = ceil(block->nominal_rate*entry_factor); // (step/min)
-  block->final_rate = ceil(block->nominal_rate*exit_factor); // (step/min)
-  int32_t acceleration_per_minute = block->rate_delta*ACCELERATION_TICKS_PER_SECOND*60.0; // (step/min^2)
-  int32_t accelerate_steps = 
-    ceil(estimate_acceleration_distance(block->initial_rate, block->nominal_rate, acceleration_per_minute));
-  int32_t decelerate_steps = 
-    floor(estimate_acceleration_distance(block->nominal_rate, block->final_rate, -acceleration_per_minute));
-    
-  // Calculate the size of Plateau of Nominal Rate. 
-  int32_t plateau_steps = block->step_event_count-accelerate_steps-decelerate_steps;
-  
-  // Is the Plateau of Nominal Rate smaller than nothing? That means no cruising, and we will
-  // have to use intersection_distance() to calculate when to abort acceleration and start braking 
-  // in order to reach the final_rate exactly at the end of this block.
-  if (plateau_steps < 0) {  
-    accelerate_steps = ceil(
-      intersection_distance(block->initial_rate, block->final_rate, acceleration_per_minute, block->step_event_count));
-    accelerate_steps = max(accelerate_steps,0); // Check limits due to numerical round-off
-    accelerate_steps = min(accelerate_steps,block->step_event_count);
-    plateau_steps = 0;
-  }  
-  
- /* block->accelerate_until = accelerate_steps;
-  block->decelerate_after = accelerate_steps+plateau_steps; */
   block->accelerate_until = 0;
   block->decelerate_after = block->step_event_count;
   block->initial_rate = block->nominal_rate;
   block->final_rate = block->nominal_rate;
-}     
+}
 
-/*                            PLANNER SPEED DEFINITION                                              
-                                     +--------+   <- current->nominal_speed
-                                    /          \                                
-         current->entry_speed ->   +            \                               
-                                   |             + <- next->entry_speed
-                                   +-------------+                              
-                                       time -->                                 
-*/                                                                              
-// Recalculates the trapezoid speed profiles for flagged blocks in the plan according to the 
-// entry_speed for each junction and the entry_speed of the next junction. Must be called by 
-// planner_recalculate() after updating the blocks. Any recalulate flagged junction will
-// compute the two adjacent trapezoids to the junction, since the junction speed corresponds 
-// to exit speed and entry speed of one another.
 static void planner_recalculate_trapezoids(void) 
 {
   uint8_t block_index = block_buffer_tail;
@@ -257,17 +85,14 @@ static void planner_recalculate_trapezoids(void)
     if (current) {
       // Recalculate if current block entry or exit junction speed has changed.
       if (current->recalculate_flag || next->recalculate_flag) {
-        // NOTE: Entry and exit factors always > 0 by all previous logic operations.     
-        calculate_trapezoid_for_block(current, current->entry_speed/current->nominal_speed,
-          next->entry_speed/current->nominal_speed);      
+	set_constant_speed_for_block(current);
         current->recalculate_flag = false; // Reset current only to ensure next trapezoid is computed
       }
     }
     block_index = next_block_index( block_index );
   }
   // Last/newest block in buffer. Exit speed is set with MINIMUM_PLANNER_SPEED. Always recalculated.
-  calculate_trapezoid_for_block(next, next->entry_speed/next->nominal_speed,
-    MINIMUM_PLANNER_SPEED/next->nominal_speed);
+  set_constant_speed_for_block(next);
   next->recalculate_flag = false;
 }
 
@@ -294,8 +119,6 @@ static void planner_recalculate_trapezoids(void)
 
 static void planner_recalculate(void) 
 {     
-  planner_reverse_pass();
-  planner_forward_pass();
   planner_recalculate_trapezoids();
 }
 
