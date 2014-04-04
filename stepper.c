@@ -391,14 +391,14 @@ ISR(TIMER1_COMPA_vect)
               }
               set_step_events_per_minute(st.trapezoid_adjusted_rate);
             }
-          }
+          } 
         } else {
           // No accelerations. Make sure we cruise exactly at the nominal rate.
           if (st.trapezoid_adjusted_rate != current_block->nominal_rate) {
             st.trapezoid_adjusted_rate = current_block->nominal_rate;
             set_step_events_per_minute(st.trapezoid_adjusted_rate);
           }
-        }
+        } 
       }            
     } else {   
       // If current block is finished, reset pointer 

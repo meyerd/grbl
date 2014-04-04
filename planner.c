@@ -224,8 +224,12 @@ static void calculate_trapezoid_for_block(block_t *block, float entry_factor, fl
     plateau_steps = 0;
   }  
   
-  block->accelerate_until = accelerate_steps;
-  block->decelerate_after = accelerate_steps+plateau_steps;
+ /* block->accelerate_until = accelerate_steps;
+  block->decelerate_after = accelerate_steps+plateau_steps; */
+  block->accelerate_until = 0;
+  block->decelerate_after = block->step_event_count;
+  block->initial_rate = block->nominal_rate;
+  block->final_rate = block->nominal_rate;
 }     
 
 /*                            PLANNER SPEED DEFINITION                                              

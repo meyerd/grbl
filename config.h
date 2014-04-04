@@ -156,7 +156,8 @@ Z Dir - Ditital 6 (T0/OC4D/ADC10) PD7
 // round-off can be great enough to cause problems and/or it's too fast for the Arduino. The correct
 // value for this parameter is machine dependent, so it's advised to set this only as high as needed.
 // Approximate successful values can range from 30L to 100L or more.
-#define ACCELERATION_TICKS_PER_SECOND 50L
+//#define ACCELERATION_TICKS_PER_SECOND 50L
+#define ACCELERATION_TICKS_PER_SECOND 30L
 
 // Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
 // of the buffer and all stops. This should not be much greater than zero and should only be changed
@@ -167,6 +168,7 @@ Z Dir - Ditital 6 (T0/OC4D/ADC10) PD7
 // slower than this value, except when sleeping. This parameter overrides the minimum planner speed.
 // This is primarily used to guarantee that the end of a movement is always reached and not stop to
 // never reach its target. This parameter should always be greater than zero.
+//#define MINIMUM_STEPS_PER_MINUTE 10 // (steps/min) - Integer value only
 #define MINIMUM_STEPS_PER_MINUTE 10 // (steps/min) - Integer value only
 
 // Time delay increments performed during a dwell. The default value is set at 50ms, which provides
